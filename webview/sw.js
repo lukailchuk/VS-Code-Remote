@@ -48,7 +48,7 @@ self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
 
   // Don't cache WebSocket or API requests
-  var url = new URL(event.request.url);
+  const url = new URL(event.request.url);
   if (url.pathname.startsWith('/ws')) return;
 
   event.respondWith(
@@ -56,7 +56,7 @@ self.addEventListener('fetch', function (event) {
       .then(function (response) {
         // If we got a valid response, clone and cache it
         if (response && response.status === 200 && response.type === 'basic') {
-          var responseToCache = response.clone();
+          const responseToCache = response.clone();
           caches.open(CACHE_NAME).then(function (cache) {
             cache.put(event.request, responseToCache);
           });

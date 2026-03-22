@@ -89,6 +89,8 @@ function extractToolResultContent(
   return '';
 }
 
+const SKIP_ENTRY_TYPES = new Set(['queue-operation', 'file-history-snapshot']);
+
 /**
  * Parse a single JSONL line from a Claude Code session file into
  * zero or more ChatMessage objects.
@@ -106,21 +108,14 @@ export function parseJsonlLine(line: string): ChatMessage[] {
   try {
     entry = JSON.parse(trimmed) as JsonlEntry;
   } catch {
-    // Malformed JSON — skip silently
     return [];
   }
 
-  // Skip non-message entry types
   if (!entry.type || !entry.message) {
     return [];
   }
 
-  const skipTypes = new Set([
-    'queue-operation',
-    'file-history-snapshot',
-  ]);
-
-  if (skipTypes.has(entry.type)) {
+  if (SKIP_ENTRY_TYPES.has(entry.type)) {
     return [];
   }
 

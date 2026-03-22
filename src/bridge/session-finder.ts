@@ -16,7 +16,7 @@ export class SessionFinder extends EventEmitter {
   /**
    * Encode workspace path to Claude Code's directory naming format.
    * Replaces `/` and spaces with `-`.
-   * e.g. `/Users/lukailchuk/Projects/AI Marketing` → `-Users-lukailchuk-Projects-AI-Marketing`
+   * e.g. `/Users/dev/Projects/My App` → `-Users-dev-Projects-My-App`
    */
   encodeProjectPath(workspacePath: string): string {
     return workspacePath.replace(/[\/ ]/g, '-');
@@ -24,69 +24,10 @@ export class SessionFinder extends EventEmitter {
 
   /**
    * Find the most recent session JSONL file for a given workspace path.
-   * Looks in `~/.claude/projects/<encoded-path>/` for .jsonl files (top-level only).
-   * Returns the one with the most recent mtime.
    */
   async findCurrentSession(workspacePath: string): Promise<SessionInfo | null> {
-    const encoded = this.encodeProjectPath(workspacePath);
-    const projectDir = path.join(this.claudeProjectsDir, encoded);
-
-    try {
-      await fs.promises.access(projectDir, fs.constants.R_OK);
-    } catch {
-      return null;
-    }
-
-    let entries: fs.Dirent[];
-    try {
-      entries = await fs.promises.readdir(projectDir, { withFileTypes: true });
-    } catch {
-      return null;
-    }
-
-    // Only top-level .jsonl files — skip directories like subagents/
-    const jsonlFiles = entries.filter(
-      (entry) => entry.isFile() && entry.name.endsWith('.jsonl')
-    );
-
-    if (jsonlFiles.length === 0) {
-      return null;
-    }
-
-    // Get stats for each file and sort by mtime descending
-    const fileStats: Array<{ name: string; fullPath: string; mtime: Date }> = [];
-
-    for (const file of jsonlFiles) {
-      const fullPath = path.join(projectDir, file.name);
-      try {
-        const stat = await fs.promises.stat(fullPath);
-        fileStats.push({
-          name: file.name,
-          fullPath,
-          mtime: stat.mtime,
-        });
-      } catch {
-        // File might have been deleted between readdir and stat — skip it
-        continue;
-      }
-    }
-
-    if (fileStats.length === 0) {
-      return null;
-    }
-
-    fileStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
-
-    const mostRecent = fileStats[0];
-    // Session ID is the filename without extension
-    const sessionId = path.basename(mostRecent.name, '.jsonl');
-
-    return {
-      sessionId,
-      filePath: mostRecent.fullPath,
-      projectPath: workspacePath,
-      lastModified: mostRecent.mtime,
-    };
+    const sessions = await this.listSessions(workspacePath);
+    return sessions[0] ?? null;
   }
 
   /**
@@ -113,26 +54,28 @@ export class SessionFinder extends EventEmitter {
       (entry) => entry.isFile() && entry.name.endsWith('.jsonl')
     );
 
-    const sessions: SessionInfo[] = [];
+    // Stat all files in parallel
+    const results = await Promise.all(
+      jsonlFiles.map(async (file) => {
+        const fullPath = path.join(projectDir, file.name);
+        try {
+          const stat = await fs.promises.stat(fullPath);
+          return {
+            sessionId: path.basename(file.name, '.jsonl'),
+            filePath: fullPath,
+            projectPath: workspacePath,
+            lastModified: stat.mtime,
+          } as SessionInfo;
+        } catch {
+          // File might have been deleted between readdir and stat
+          return null;
+        }
+      })
+    );
 
-    for (const file of jsonlFiles) {
-      const fullPath = path.join(projectDir, file.name);
-      try {
-        const stat = await fs.promises.stat(fullPath);
-        sessions.push({
-          sessionId: path.basename(file.name, '.jsonl'),
-          filePath: fullPath,
-          projectPath: workspacePath,
-          lastModified: stat.mtime,
-        });
-      } catch {
-        continue;
-      }
-    }
-
-    sessions.sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
-
-    return sessions;
+    return results
+      .filter((s): s is SessionInfo => s !== null)
+      .sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
   }
 
   /**

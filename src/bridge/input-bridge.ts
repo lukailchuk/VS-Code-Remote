@@ -7,6 +7,9 @@ import * as vscode from 'vscode';
  * to continue the exact same session as the panel. Uses terminal.sendText()
  * for reliable message delivery.
  */
+const SHELL_INIT_DELAY_MS = 2000;
+const CLAUDE_STARTUP_DELAY_MS = 4000;
+
 export class InputBridge {
   private terminal: vscode.Terminal | null = null;
   private terminalReady = false;
@@ -63,14 +66,9 @@ export class InputBridge {
     // Show terminal but don't steal focus from current editor
     this.terminal.show(true);
 
-    // Wait for shell to fully initialize
-    await this.delay(2000);
-
-    // Resume the specific session from the panel
+    await this.delay(SHELL_INIT_DELAY_MS);
     this.terminal.sendText(`claude --resume ${this.sessionId}`);
-
-    // Wait for Claude CLI to start up
-    await this.delay(4000);
+    await this.delay(CLAUDE_STARTUP_DELAY_MS);
 
     this.terminalReady = true;
   }

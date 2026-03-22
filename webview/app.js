@@ -509,12 +509,12 @@
 
   function autoGrow(el) {
     el.style.height = 'auto';
-    var maxH = parseFloat(getComputedStyle(el).maxHeight) || 200;
+    const maxH = parseFloat(getComputedStyle(el).maxHeight) || 200;
     el.style.height = Math.min(el.scrollHeight, maxH) + 'px';
   }
 
   function sendMessage() {
-    var text = messageInput.value.trim();
+    const text = messageInput.value.trim();
     if (!text) return;
     if (!wsSend({ type: 'send_message', text: text })) return;
 
@@ -560,7 +560,7 @@
 
   function formatTime(timestamp) {
     try {
-      var d = new Date(timestamp);
+      const d = new Date(timestamp);
       if (isNaN(d.getTime())) return '';
       return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
     } catch (e) {
@@ -578,11 +578,11 @@
 
   function initKeyboardHandling() {
     if (window.visualViewport) {
-      var onViewportChange = function () {
-        var viewport = window.visualViewport;
-        var bottomOffset = window.innerHeight - viewport.height - viewport.offsetTop;
-        var inputArea = document.getElementById('inputArea');
-        var actionBar = document.getElementById('actionBar');
+      const onViewportChange = function () {
+        const viewport = window.visualViewport;
+        const bottomOffset = window.innerHeight - viewport.height - viewport.offsetTop;
+        const inputArea = document.getElementById('inputArea');
+        const actionBar = document.getElementById('actionBar');
         if (bottomOffset > 50) {
           inputArea.style.paddingBottom = '8px';
           inputArea.style.bottom = bottomOffset + 'px';

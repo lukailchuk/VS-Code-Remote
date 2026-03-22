@@ -51,15 +51,7 @@ export class CloudflareTunnel extends EventEmitter {
    */
   async start(port: number): Promise<string | null> {
     if (this.process) {
-      // Already running — return existing URL
       return this.tunnelUrl;
-    }
-
-    const available = await this.isAvailable();
-    if (!available) {
-      const err = new Error(this.getInstallInstructions());
-      this.emit('error', err);
-      return null;
     }
 
     return new Promise<string | null>((resolve) => {

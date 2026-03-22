@@ -3,7 +3,7 @@
   "displayName": "Claude Code Mobile Bridge",
   "description": "Control Claude Code from your iPhone — text input, accept/reject, all from a mobile PWA",
   "version": "0.1.0",
-  "publisher": "lukailchuk",
+  "publisher": "your-publisher-id",
   "engines": {
     "vscode": "^1.85.0"
   },

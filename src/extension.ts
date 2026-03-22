@@ -26,6 +26,20 @@ let extensionContext: vscode.ExtensionContext;
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
+ * Wire up message and error listeners on a JsonlWatcher,
+ * forwarding to the server and output channel.
+ */
+function wireWatcher(watcher: JsonlWatcher): void {
+  watcher.on('message', (message: ChatMessage) => {
+    server?.broadcastMessage(message);
+  });
+
+  watcher.on('error', (err: Error) => {
+    outputChannel.appendLine(`[Watcher Error] ${err.message}`);
+  });
+}
+
+/**
  * Find the first non-internal IPv4 address on this machine.
  * Falls back to 127.0.0.1 if nothing else is found.
  */
@@ -227,13 +241,7 @@ async function startBridge(): Promise<void> {
   }
 
   // 5. Wire events
-  jsonlWatcher.on('message', (message: ChatMessage) => {
-    server?.broadcastMessage(message);
-  });
-
-  jsonlWatcher.on('error', (err: Error) => {
-    outputChannel.appendLine(`[Watcher Error] ${err.message}`);
-  });
+  wireWatcher(jsonlWatcher);
 
   server.on('send-message', async (text: string) => {
     outputChannel.appendLine(`[Mobile → Claude] ${text.slice(0, 80)}...`);
@@ -280,14 +288,7 @@ async function startBridge(): Promise<void> {
     jsonlWatcher?.dispose();
 
     jsonlWatcher = new JsonlWatcher(newSession.filePath);
-
-    jsonlWatcher.on('message', (message: ChatMessage) => {
-      server?.broadcastMessage(message);
-    });
-
-    jsonlWatcher.on('error', (err: Error) => {
-      outputChannel.appendLine(`[Watcher Error] ${err.message}`);
-    });
+    wireWatcher(jsonlWatcher);
 
     jsonlWatcher.start().catch((err) => {
       outputChannel.appendLine(
@@ -473,7 +474,10 @@ function disposeAll(): void {
     sessionFinder.dispose();
     sessionFinder = null;
   }
-  inputBridge = null;
+  if (inputBridge) {
+    inputBridge.dispose();
+    inputBridge = null;
+  }
   commandExecutor = null;
 }
 
