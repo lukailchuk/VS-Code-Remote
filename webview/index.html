@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- iOS PWA meta tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Claude Mobile">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+  <!-- Theme color for browser chrome -->
+  <meta name="theme-color" content="#0d1117">
+
+  <title>Claude Mobile</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-title">
+      <svg class="header-logo" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>Claude Mobile</span>
+    </div>
+    <div class="connection-status" id="connectionStatus">
+      <span class="status-dot" id="statusDot"></span>
+      <span class="status-text" id="statusText">Connecting...</span>
+    </div>
+  </header>
+
+  <!-- Chat area -->
+  <main class="chat-area" id="chatArea">
+    <div class="chat-messages" id="chatMessages">
+      <!-- Messages rendered by JS -->
+    </div>
+    <div class="scroll-indicator" id="scrollIndicator" hidden>
+      <button class="scroll-btn" id="scrollBtn">New messages ↓</button>
+    </div>
+  </main>
+
+  <!-- Action bar -->
+  <div class="action-bar" id="actionBar">
+    <button class="action-btn accept-btn" id="acceptBtn" title="Accept">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>Accept</span>
+    </button>
+    <button class="action-btn reject-btn" id="rejectBtn" title="Reject">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      <span>Reject</span>
+    </button>
+  </div>
+
+  <!-- Input area -->
+  <div class="input-area" id="inputArea">
+    <div class="input-wrapper">
+      <textarea
+        id="messageInput"
+        class="message-input"
+        placeholder="Message Claude Code..."
+        rows="1"
+        autocomplete="off"
+        autocorrect="on"
+        spellcheck="true"
+      ></textarea>
+      <button class="send-btn" id="sendBtn" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {
+          // SW registration failed — not critical for functionality
+        });
+      });
+    }
+  </script>
+</body>
+</html>

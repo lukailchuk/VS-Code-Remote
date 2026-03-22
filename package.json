@@ -1,0 +1,75 @@
+{
+  "name": "claude-code-mobile-bridge",
+  "displayName": "Claude Code Mobile Bridge",
+  "description": "Control Claude Code from your iPhone — text input, accept/reject, all from a mobile PWA",
+  "version": "0.1.0",
+  "publisher": "lukailchuk",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claude-mobile.start",
+        "title": "Start Mobile Bridge",
+        "category": "Claude Mobile"
+      },
+      {
+        "command": "claude-mobile.stop",
+        "title": "Stop Mobile Bridge",
+        "category": "Claude Mobile"
+      },
+      {
+        "command": "claude-mobile.showQR",
+        "title": "Show QR Code",
+        "category": "Claude Mobile"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "claude-mobile.start",
+        "key": "ctrl+shift+m",
+        "mac": "cmd+shift+m"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Code Mobile Bridge",
+      "properties": {
+        "claudeMobile.port": {
+          "type": "number",
+          "default": 7777,
+          "description": "Port for the mobile bridge server"
+        },
+        "claudeMobile.autoTunnel": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start Cloudflare Tunnel on bridge start"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/qrcode": "^1.5.5",
+    "@types/vscode": "^1.85.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.3.3"
+  }
+}
